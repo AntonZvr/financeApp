@@ -56,6 +56,27 @@ namespace WebApp.Service
             _transactionRepository.DeleteTransaction(id);
             _transactionRepository.Save();
         }
+
+        public DailyReport GetDailyReport(DateTime date)
+        {
+            var transactionsOnDate = _transactionRepository.GetTransactions()
+                                .Where(x => x.Date.Date == date.Date)
+                                .ToList();
+
+            var income = transactionsOnDate.Where(x => x.Type.ToLower() == "income")
+                                .Sum(x => x.Amount);
+
+            var expenses = transactionsOnDate.Where(x => x.Type.ToLower() == "expense")
+                                .Sum(x => x.Amount);
+
+            return new DailyReport
+            {
+                Income = income,
+                Expenses = expenses,
+                Transactions = transactionsOnDate
+            };
+        }
+
     }
 
 }

@@ -74,6 +74,20 @@ namespace WebApp.Controllers
             return new OkResult();
         }
 
+        [HttpGet("DailyReport/{date}")]
+        public IActionResult DailyReport(DateTime date)
+        {
+            var report = _transactionService.GetDailyReport(date);
+
+            if (report == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(report);
+        }
+
+
     }
 
 

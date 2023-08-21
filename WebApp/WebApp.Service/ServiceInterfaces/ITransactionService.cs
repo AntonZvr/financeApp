@@ -10,6 +10,8 @@ namespace WebApp.ServiceInterfaces
         void InsertTransaction(TransactionViewModel transactionDto);
         void UpdateTransaction(int id, TransactionViewModel transactionDto);
         void DeleteTransaction(int id);
+        DailyReport GetDailyReport(DateTime date);
+
     }
 
 }
