@@ -87,9 +87,23 @@ namespace WebApp.Controllers
             return Ok(report);
         }
 
+        [HttpGet("PeriodReport/{startDate}/{endDate}")]
+        public IActionResult PeriodReport(DateTime startDate, DateTime endDate)
+        {
+            if (startDate > endDate)
+            {
+                return BadRequest("Start date should be less than the end date");
+            }
+
+            var report = _transactionService.GetPeriodReport(startDate, endDate);
+
+            if (report?.Transactions.Count() == 0)
+            {
+                return NotFound();
+            }
+
+            return Ok(report);
+        }
 
     }
-
-
-
 }

@@ -77,6 +77,27 @@ namespace WebApp.Service
             };
         }
 
+        public DailyReport GetPeriodReport(DateTime startDate, DateTime endDate)
+        {
+            var transactionsInPeriod = _transactionRepository.GetTransactions()
+                                .Where(x => x.Date.Date >= startDate.Date && x.Date.Date <= endDate.Date)
+                                .ToList();
+
+            var income = transactionsInPeriod.Where(x => x.Type.ToLower() == "income")
+                                .Sum(x => x.Amount);
+
+            var expenses = transactionsInPeriod.Where(x => x.Type.ToLower() == "expense")
+                                .Sum(x => x.Amount);
+
+            return new DailyReport
+            {
+                Income = income,
+                Expenses = expenses,
+                Transactions = transactionsInPeriod
+            };
+        }
+
+
     }
 
 }

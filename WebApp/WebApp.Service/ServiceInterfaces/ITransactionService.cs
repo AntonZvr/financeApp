@@ -11,6 +11,7 @@ namespace WebApp.ServiceInterfaces
         void UpdateTransaction(int id, TransactionViewModel transactionDto);
         void DeleteTransaction(int id);
         DailyReport GetDailyReport(DateTime date);
+        DailyReport GetPeriodReport(DateTime startDate, DateTime endDate);
 
     }
 
