@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Globalization;
-using WebApp.DAL.Models;
 using WebApp.DAL.RepositoryInterfaces;
+using WebApp.Data.DAL.ViewModels;
 using WebApp.ServiceInterfaces;
 
 namespace WebApp.Controllers
@@ -35,7 +35,7 @@ namespace WebApp.Controllers
         }
 
         [HttpPost]
-        public IActionResult Post([FromBody] TransactionDto transactionDto)
+        public IActionResult Post([FromBody] TransactionViewModel transactionDto)
         {
             if (!ModelState.IsValid)
             {
@@ -48,7 +48,7 @@ namespace WebApp.Controllers
         }
 
         [HttpPut("{id}")]
-        public IActionResult Put(int id, [FromBody] TransactionDto transactionDto)
+        public IActionResult Put(int id, [FromBody] TransactionViewModel transactionDto)
         {
             if (id != transactionDto.TransactionId)
             {

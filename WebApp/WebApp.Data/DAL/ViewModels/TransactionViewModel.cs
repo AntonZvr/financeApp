@@ -1,6 +1,6 @@
-﻿namespace WebApp.DAL.Models
+﻿namespace WebApp.Data.DAL.ViewModels
 {
-    public class TransactionDto
+    public class TransactionViewModel
     {
         public int TransactionId { get; set; }
         public string Type { get; set; }

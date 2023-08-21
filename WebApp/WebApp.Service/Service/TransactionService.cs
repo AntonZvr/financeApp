@@ -1,6 +1,7 @@
 ﻿using System.Globalization;
 using WebApp.DAL.Models;
 using WebApp.DAL.RepositoryInterfaces;
+using WebApp.Data.DAL.ViewModels;
 using WebApp.ServiceInterfaces;
 
 namespace WebApp.Service
@@ -24,7 +25,7 @@ namespace WebApp.Service
             return _transactionRepository.GetTransactionById(id);
         }
 
-        public void InsertTransaction(TransactionDto transactionDto)
+        public void InsertTransaction(TransactionViewModel transactionDto)
         {
             var transaction = new Transaction
             {
@@ -38,7 +39,7 @@ namespace WebApp.Service
             _transactionRepository.Save();
         }
 
-        public void UpdateTransaction(int id, TransactionDto transactionDto)
+        public void UpdateTransaction(int id, TransactionViewModel transactionDto)
         {
             var transaction = _transactionRepository.GetTransactionById(id);
             transaction.Type = transactionDto.Type;

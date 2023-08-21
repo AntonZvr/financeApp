@@ -1,4 +1,5 @@
 ﻿using WebApp.DAL.Models;
+using WebApp.Data.DAL.ViewModels;
 
 namespace WebApp.ServiceInterfaces
 {
@@ -6,8 +7,8 @@ namespace WebApp.ServiceInterfaces
     {
         IEnumerable<Transaction> GetTransactions();
         Transaction GetTransactionById(int id);
-        void InsertTransaction(TransactionDto transactionDto);
-        void UpdateTransaction(int id, TransactionDto transactionDto);
+        void InsertTransaction(TransactionViewModel transactionDto);
+        void UpdateTransaction(int id, TransactionViewModel transactionDto);
         void DeleteTransaction(int id);
     }
 
