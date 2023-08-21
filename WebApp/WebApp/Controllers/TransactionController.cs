@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.Globalization;
 using WebApp.DAL.Models;
 using WebApp.DAL.RepositoryInterfaces;
 
@@ -17,21 +18,79 @@ namespace WebApp.Controllers
             _transactionRepository = transactionRepository;
         }
 
+        // GET: api/Transactions
         [HttpGet]
         public IActionResult GetTransactions()
         {
             return new OkObjectResult(_transactionRepository.GetTransactions());
         }
 
-        [HttpPost]
-        public IActionResult InsertTransaction([FromBody] Transaction transaction)
+        // GET: api/Transactions/5
+        [HttpGet("{id}", Name = "Get")]
+        public IActionResult GetById(int id)
         {
-            _transactionRepository.InsertTransaction(transaction);
-            _transactionRepository.Save();
-            return CreatedAtAction(nameof(GetTransactions), new { id = transaction.TransactionId }, transaction);
+            var transaction = _transactionRepository.GetTransactionById(id);
+            if (transaction == null)
+            {
+                return NotFound();
+            }
+            return new OkObjectResult(transaction);
         }
 
-        // Rest of the methods (PUT, DELETE) will go here.
+        // POST: api/Transactions
+        [HttpPost]
+        public IActionResult Post([FromBody] TransactionDto transactionDto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var transaction = new Transaction
+            {
+                Type = transactionDto.Type,
+                Amount = Math.Round(transactionDto.Amount, 2),
+                Date = DateTime.ParseExact(transactionDto.Date, "dd.MM.yy", CultureInfo.InvariantCulture),
+                Description = transactionDto.Description
+            };
+
+            _transactionRepository.InsertTransaction(transaction);
+            _transactionRepository.Save();
+
+            return CreatedAtAction(nameof(GetById), new { id = transaction.TransactionId }, transaction);
+        }
+
+        // PUT: api/Transactions/5
+        [HttpPut("{id}")]
+        public IActionResult Put(int id, [FromBody] Transaction transaction)
+        {
+            if (id != transaction.TransactionId)
+            {
+                return BadRequest();
+            }
+
+            _transactionRepository.UpdateTransaction(transaction);
+            _transactionRepository.Save();
+
+            return NoContent();
+        }
+
+        // DELETE: api/Transactions/5
+        [HttpDelete("{id}")]
+        public IActionResult Delete(int id)
+        {
+            var transaction = _transactionRepository.GetTransactionById(id);
+            if (transaction == null)
+            {
+                return NotFound();
+            }
+
+            _transactionRepository.DeleteTransaction(id);
+            _transactionRepository.Save();
+
+            return new OkResult();
+        }
     }
+
 
 }
