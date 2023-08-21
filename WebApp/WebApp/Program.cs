@@ -4,6 +4,8 @@ using WebApp.DAL.Repository;
 using WebApp.DAL.RepositoryInterfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using WebApp.Service;
+using WebApp.ServiceInterfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +19,7 @@ builder.Services.AddDbContext<FinanceContext>(options =>
     options.UseSqlServer(@"Server=DESKTOP-L4JH3JT\SQLEXPRESS;Database=task12DB;Trusted_Connection=True;TrustServerCertificate=True"));
 
 builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
+builder.Services.AddScoped<ITransactionService, TransactionService>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

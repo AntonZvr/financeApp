@@ -2,8 +2,7 @@
 using System.Globalization;
 using WebApp.DAL.Models;
 using WebApp.DAL.RepositoryInterfaces;
-
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+using WebApp.ServiceInterfaces;
 
 namespace WebApp.Controllers
 {
@@ -11,25 +10,23 @@ namespace WebApp.Controllers
     [ApiController]
     public class TransactionsController : ControllerBase
     {
-        private readonly ITransactionRepository _transactionRepository;
+        private readonly ITransactionService _transactionService;
 
-        public TransactionsController(ITransactionRepository transactionRepository)
+        public TransactionsController(ITransactionService transactionService)
         {
-            _transactionRepository = transactionRepository;
+            _transactionService = transactionService;
         }
 
-        // GET: api/Transactions
         [HttpGet]
         public IActionResult GetTransactions()
         {
-            return new OkObjectResult(_transactionRepository.GetTransactions());
+            return new OkObjectResult(_transactionService.GetTransactions());
         }
 
-        // GET: api/Transactions/5
         [HttpGet("{id}", Name = "Get")]
         public IActionResult GetById(int id)
         {
-            var transaction = _transactionRepository.GetTransactionById(id);
+            var transaction = _transactionService.GetTransactionById(id);
             if (transaction == null)
             {
                 return NotFound();
@@ -37,7 +34,6 @@ namespace WebApp.Controllers
             return new OkObjectResult(transaction);
         }
 
-        // POST: api/Transactions
         [HttpPost]
         public IActionResult Post([FromBody] TransactionDto transactionDto)
         {
@@ -46,51 +42,40 @@ namespace WebApp.Controllers
                 return BadRequest(ModelState);
             }
 
-            var transaction = new Transaction
-            {
-                Type = transactionDto.Type,
-                Amount = Math.Round(transactionDto.Amount, 2),
-                Date = DateTime.ParseExact(transactionDto.Date, "dd.MM.yy", CultureInfo.InvariantCulture),
-                Description = transactionDto.Description
-            };
+            _transactionService.InsertTransaction(transactionDto);
 
-            _transactionRepository.InsertTransaction(transaction);
-            _transactionRepository.Save();
-
-            return CreatedAtAction(nameof(GetById), new { id = transaction.TransactionId }, transaction);
+            return CreatedAtAction(nameof(GetById), new { id = transactionDto.TransactionId }, transactionDto);
         }
 
-        // PUT: api/Transactions/5
         [HttpPut("{id}")]
-        public IActionResult Put(int id, [FromBody] Transaction transaction)
+        public IActionResult Put(int id, [FromBody] TransactionDto transactionDto)
         {
-            if (id != transaction.TransactionId)
+            if (id != transactionDto.TransactionId)
             {
                 return BadRequest();
             }
 
-            _transactionRepository.UpdateTransaction(transaction);
-            _transactionRepository.Save();
+            _transactionService.UpdateTransaction(id, transactionDto);
 
             return NoContent();
         }
 
-        // DELETE: api/Transactions/5
         [HttpDelete("{id}")]
         public IActionResult Delete(int id)
         {
-            var transaction = _transactionRepository.GetTransactionById(id);
+            var transaction = _transactionService.GetTransactionById(id);
             if (transaction == null)
             {
                 return NotFound();
             }
 
-            _transactionRepository.DeleteTransaction(id);
-            _transactionRepository.Save();
+            _transactionService.DeleteTransaction(id);
 
             return new OkResult();
         }
+
     }
+
 
 
 }
