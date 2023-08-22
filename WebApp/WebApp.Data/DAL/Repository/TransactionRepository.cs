@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using WebApp.DAL.Models;
+using WebApp.DAL.Models.WebApp.DAL.Models;
 using WebApp.DAL.RepositoryInterfaces;
 
 namespace WebApp.DAL.Repository
@@ -13,25 +14,25 @@ namespace WebApp.DAL.Repository
             _context = context;
         }
 
-        public IEnumerable<Transaction> GetTransactions()
+        public IQueryable<Transaction> GetTransactions()
         {
-            return _context.Transactions.ToList();
+            return _context.Transactions1.AsQueryable();
         }
 
         public Transaction GetTransactionById(int transactionId)
         {
-            return _context.Transactions.Find(transactionId);
+            return _context.Transactions1.Find(transactionId);
         }
 
         public void InsertTransaction(Transaction transaction)
         {
-            _context.Transactions.Add(transaction);
+            _context.Transactions1.Add(transaction);
         }
 
         public void DeleteTransaction(int transactionId)
         {
-            Transaction transaction = _context.Transactions.Find(transactionId);
-            _context.Transactions.Remove(transaction);
+            Transaction transaction = _context.Transactions1.Find(transactionId);
+            _context.Transactions1.Remove(transaction);
         }
 
         public void UpdateTransaction(Transaction transaction)

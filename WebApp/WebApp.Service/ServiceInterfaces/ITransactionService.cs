@@ -1,4 +1,5 @@
 ﻿using WebApp.DAL.Models;
+using WebApp.DAL.Models.WebApp.DAL.Models;
 using WebApp.Data.DAL.ViewModels;
 
 namespace WebApp.ServiceInterfaces
@@ -10,8 +11,8 @@ namespace WebApp.ServiceInterfaces
         void InsertTransaction(TransactionViewModel transactionDto);
         void UpdateTransaction(int id, TransactionViewModel transactionDto);
         void DeleteTransaction(int id);
-        DailyReport GetDailyReport(DateTime date);
-        DailyReport GetPeriodReport(DateTime startDate, DateTime endDate);
+        FinanceReportViewModel GetDailyReport(DateTime date);
+        FinanceReportViewModel GetPeriodReport(DateTime startDate, DateTime endDate);
 
     }
 

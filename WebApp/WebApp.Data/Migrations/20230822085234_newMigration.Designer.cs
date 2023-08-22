@@ -12,8 +12,8 @@ using WebApp.DAL.Models;
 namespace WebApp.Data.Migrations
 {
     [DbContext(typeof(FinanceContext))]
-    [Migration("20230821091534_MyMigration")]
-    partial class MyMigration
+    [Migration("20230822085234_newMigration")]
+    partial class newMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -25,7 +25,7 @@ namespace WebApp.Data.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("WebApp.DAL.Models.Transaction", b =>
+            modelBuilder.Entity("WebApp.DAL.Models.WebApp.DAL.Models.Transaction", b =>
                 {
                     b.Property<int>("TransactionId")
                         .ValueGeneratedOnAdd()
@@ -43,13 +43,46 @@ namespace WebApp.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
 
                     b.HasKey("TransactionId");
 
-                    b.ToTable("Transactions");
+                    b.HasIndex("Type");
+
+                    b.ToTable("Transactions1");
+                });
+
+            modelBuilder.Entity("WebApp.Data.DAL.Models.TransactionType", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("TransactionType1");
+                });
+
+            modelBuilder.Entity("WebApp.DAL.Models.WebApp.DAL.Models.Transaction", b =>
+                {
+                    b.HasOne("WebApp.Data.DAL.Models.TransactionType", "TransactionType")
+                        .WithMany()
+                        .HasForeignKey("Type")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("TransactionType");
                 });
 #pragma warning restore 612, 618
         }

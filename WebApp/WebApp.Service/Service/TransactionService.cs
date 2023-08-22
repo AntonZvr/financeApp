@@ -1,5 +1,7 @@
-﻿using System.Globalization;
+﻿using Microsoft.EntityFrameworkCore;
+using System.Globalization;
 using WebApp.DAL.Models;
+using WebApp.DAL.Models.WebApp.DAL.Models;
 using WebApp.DAL.RepositoryInterfaces;
 using WebApp.Data.DAL.ViewModels;
 using WebApp.ServiceInterfaces;
@@ -29,7 +31,7 @@ namespace WebApp.Service
         {
             var transaction = new Transaction
             {
-                Type = transactionDto.Type,
+                Type = transactionDto.Type, 
                 Amount = transactionDto.Amount,
                 Date = DateTime.ParseExact(transactionDto.Date, "dd.MM.yy", CultureInfo.InvariantCulture),
                 Description = transactionDto.Description
@@ -42,7 +44,7 @@ namespace WebApp.Service
         public void UpdateTransaction(int id, TransactionViewModel transactionDto)
         {
             var transaction = _transactionRepository.GetTransactionById(id);
-            transaction.Type = transactionDto.Type;
+            transaction.Type = transactionDto.Type; 
             transaction.Amount = transactionDto.Amount;
             transaction.Date = DateTime.ParseExact(transactionDto.Date, "dd.MM.yy", CultureInfo.InvariantCulture);
             transaction.Description = transactionDto.Description;
@@ -57,19 +59,20 @@ namespace WebApp.Service
             _transactionRepository.Save();
         }
 
-        public DailyReport GetDailyReport(DateTime date)
+        public FinanceReportViewModel GetDailyReport(DateTime date)
         {
             var transactionsOnDate = _transactionRepository.GetTransactions()
-                                .Where(x => x.Date.Date == date.Date)
-                                .ToList();
+                                    .Include(t => t.TransactionType) // Include the transaction type
+                                    .Where(x => x.Date.Date == date.Date)
+                                    .ToList();
 
-            var income = transactionsOnDate.Where(x => x.Type.ToLower() == "income")
-                                .Sum(x => x.Amount);
+            var income = transactionsOnDate.Where(x => x.TransactionType.Category.ToLower() == "income")
+                                    .Sum(x => x.Amount);
 
-            var expenses = transactionsOnDate.Where(x => x.Type.ToLower() == "expense")
-                                .Sum(x => x.Amount);
+            var expenses = transactionsOnDate.Where(x => x.TransactionType.Category.ToLower() == "expense")
+                                    .Sum(x => x.Amount);
 
-            return new DailyReport
+            return new FinanceReportViewModel
             {
                 Income = income,
                 Expenses = expenses,
@@ -77,27 +80,26 @@ namespace WebApp.Service
             };
         }
 
-        public DailyReport GetPeriodReport(DateTime startDate, DateTime endDate)
+        public FinanceReportViewModel GetPeriodReport(DateTime startDate, DateTime endDate)
         {
             var transactionsInPeriod = _transactionRepository.GetTransactions()
-                                .Where(x => x.Date.Date >= startDate.Date && x.Date.Date <= endDate.Date)
-                                .ToList();
+                                    .Include(t => t.TransactionType) // Include the transaction type
+                                    .Where(x => x.Date.Date >= startDate.Date && x.Date.Date <= endDate.Date)
+                                    .ToList();
 
-            var income = transactionsInPeriod.Where(x => x.Type.ToLower() == "income")
-                                .Sum(x => x.Amount);
+            var income = transactionsInPeriod.Where(x => x.TransactionType.Category.ToLower() == "income")
+                                    .Sum(x => x.Amount);
 
-            var expenses = transactionsInPeriod.Where(x => x.Type.ToLower() == "expense")
-                                .Sum(x => x.Amount);
+            var expenses = transactionsInPeriod.Where(x => x.TransactionType.Category.ToLower() == "expense")
+                                    .Sum(x => x.Amount);
 
-            return new DailyReport
+            return new FinanceReportViewModel
             {
                 Income = income,
                 Expenses = expenses,
                 Transactions = transactionsInPeriod
             };
         }
-
-
     }
 
 }

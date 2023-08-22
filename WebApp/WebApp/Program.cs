@@ -6,6 +6,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using WebApp.Service;
 using WebApp.ServiceInterfaces;
+using WebApp.Data.DAL.RepositoryInterfaces;
+using WebApp.Data.DAL.Repository;
+using WebApp.Service.Service;
+using WebApp.Data.DAL.Models;
+using WebApp.Service.ServiceInterfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +25,8 @@ builder.Services.AddDbContext<FinanceContext>(options =>
 
 builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
 builder.Services.AddScoped<ITransactionService, TransactionService>();
+builder.Services.AddScoped<ITransactionTypeRepository, TransactionTypeRepository>();
+builder.Services.AddScoped<ITransactionTypeService, TransactionTypeService>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
