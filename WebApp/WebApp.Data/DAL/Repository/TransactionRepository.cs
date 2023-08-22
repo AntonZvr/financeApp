@@ -19,6 +19,11 @@ namespace WebApp.DAL.Repository
             return _context.Transactions1.AsQueryable();
         }
 
+        public IEnumerable<Transaction> GetTransactionsWithType()
+        {
+            return _context.Transactions1.Include(t => t.TransactionType).ToList();
+        }
+
         public Transaction GetTransactionById(int transactionId)
         {
             return _context.Transactions1.Find(transactionId);

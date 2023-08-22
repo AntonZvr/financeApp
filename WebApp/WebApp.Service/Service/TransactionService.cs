@@ -19,7 +19,7 @@ namespace WebApp.Service
 
         public IEnumerable<Transaction> GetTransactions()
         {
-            return _transactionRepository.GetTransactions();
+            return _transactionRepository.GetTransactionsWithType();
         }
 
         public Transaction GetTransactionById(int id)

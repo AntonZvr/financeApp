@@ -5,6 +5,7 @@ namespace WebApp.DAL.RepositoryInterfaces
 {
     public interface ITransactionRepository
     {
+        IEnumerable<Transaction> GetTransactionsWithType();
         IQueryable<Transaction> GetTransactions();
         Transaction GetTransactionById(int transactionId);
         void InsertTransaction(Transaction transaction);
