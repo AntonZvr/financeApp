@@ -1,9 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using WebApp.DAL.Models;
 using WebApp.Data.DAL.Models;
 using WebApp.Data.DAL.RepositoryInterfaces;
