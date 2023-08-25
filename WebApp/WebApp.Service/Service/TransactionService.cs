@@ -53,7 +53,7 @@ namespace WebApp.Service
             var transaction = _transactionRepository.GetTransactionById(id);
             transaction.Type = transactionDto.Type; 
             transaction.Amount = transactionDto.Amount;
-            transaction.Date = DateTime.ParseExact(transactionDto.Date, "dd.MM.yy", CultureInfo.InvariantCulture);
+            transaction.Date = DateTime.ParseExact(transactionDto.Date, "dd.MM.yyyy", CultureInfo.InvariantCulture);
             transaction.Description = transactionDto.Description;
 
             _transactionRepository.UpdateTransaction(transaction);

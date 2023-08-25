@@ -44,8 +44,7 @@ namespace WebApp.Controllers
 
             _transactionService.InsertTransaction(transactionDto);
 
-            return CreatedAtAction(nameof(GetById), new { id = transactionDto.TransactionId, transactionType = 
-                transactionDto.TransactionType}, transactionDto);
+            return CreatedAtAction(nameof(GetById), new { id = transactionDto.TransactionId}, transactionDto);
         }
 
         [HttpPut("editTransaction/{id}")]

@@ -1,5 +1,7 @@
 ﻿@page "/transactions"
 @using WebApp.DAL.Models.WebApp.DAL.Models;
+@using WebApp.Data.DAL.Models;
+@using WebApp.Data.DAL.ViewModels;
 @inject HttpClient Http
 
 <h3>Transactions</h3>
@@ -10,18 +12,32 @@
 }
 else
 {
-    <EditForm Model="newTransaction" OnValidSubmit="AddTransaction">
+    <EditForm Model="newTransactionViewModel" OnValidSubmit="@AddTransaction">
         <DataAnnotationsValidator />
         <ValidationSummary />
-    
-        <InputDate id="date" @bind-Value="newTransaction.Date" placeholder="Date" />
-        <InputNumber id="type" @bind-Value="newTransaction.Type" placeholder ="Type"></InputNumber>
-        <InputNumber id="amount" @bind-Value="newTransaction.Amount" placeholder="Amount"></InputNumber>
-        <InputText id="desc" @bind-Value="newTransaction.Description" placeholder="Description"></InputText>
+
+        <InputText id="date" @bind-Value="newTransactionViewModel.Date" placeholder="Date" />
+        <InputNumber id="type" @bind-Value="newTransactionViewModel.Type" placeholder="Type"></InputNumber>
+        <InputNumber id="amount" @bind-Value="newTransactionViewModel.Amount" placeholder="Amount"></InputNumber>
+        <InputText id="desc" @bind-Value="newTransactionViewModel.Description" placeholder="Description"></InputText>
 
         <button type="submit">Add New Transaction</button>
     </EditForm>
 
+    @if (isEditing)
+    {
+        <EditForm Model="editedTransaction" OnValidSubmit="SaveEditedTransaction">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <InputDate id="date" @bind-Value="editedTransaction.Date" placeholder="Date" />
+            <InputNumber id="type" @bind-Value="editedTransaction.Type" placeholder="Type"></InputNumber>
+            <InputNumber id="amount" @bind-Value="editedTransaction.Amount" placeholder="Amount"></InputNumber>
+            <InputText id="desc" @bind-Value="editedTransaction.Description" placeholder="Description"></InputText>
+
+            <button type="submit">Save Changes</button>
+        </EditForm>
+    }
     <table class='table'>
         <thead>
             <tr>
@@ -39,7 +55,7 @@ else
                     <td>@transaction.Amount</td>
                     <td>@transaction.Date</td>
                     <td>
-                        <button @onclick="() => EditTransaction(transaction.TransactionId)">Edit</button>
+                        <button @onclick="() => StartEditingTransaction(transaction.TransactionId)">Edit</button> 
                         <button @onclick="() => DeleteTransaction(transaction.TransactionId)">Delete</button>
                     </td>
                 </tr>
@@ -50,20 +66,49 @@ else
 
 @code {
     private Transaction[] transactions;
+    private TransactionViewModel newTransactionViewModel = new TransactionViewModel();
     private Transaction newTransaction = new Transaction();
+    TransactionType transactionType = new TransactionType();
+    private bool isEditing = false;
+    private Transaction editedTransaction;
 
     protected override async Task OnInitializedAsync()
     {
         transactions = await Http.GetFromJsonAsync<Transaction[]>("https://localhost:7271/api/Transactions/getAllTransactions");
     }
 
-    private async Task AddTransaction()
+    private void StartEditingTransaction(int id)
     {
-        Console.WriteLine(newTransaction);
-        await Http.PostAsJsonAsync("https://localhost:7271/api/Transactions/addTransaction", newTransaction);
-        newTransaction = new Transaction(); // Reset the form
+        editedTransaction = transactions.First(t => t.TransactionId == id);
+        isEditing = true;
+    }
+
+    private async Task SaveEditedTransaction()
+    {
+        await Http.PutAsJsonAsync($"https://localhost:7271/api/Transactions/editTransaction/{editedTransaction.TransactionId}", editedTransaction);
+        isEditing = false; // Close the form
         await OnInitializedAsync(); // Refresh the list
     }
+
+    private async Task AddTransaction()
+    {
+        try
+        {
+            transactionType.Name = "";
+            transactionType.Category = "";
+            transactionType.Id = 0;
+            newTransactionViewModel.TransactionType = transactionType;
+            HttpResponseMessage response = await Http.PostAsJsonAsync("https://localhost:7271/api/Transactions/addTransaction", newTransactionViewModel);
+            response.EnsureSuccessStatusCode(); // Ensure a successful response (status code 2xx)
+
+            await OnInitializedAsync(); // Refresh the list
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error adding transaction: {ex.Message}");
+        }
+    }
+
 
     private async Task EditTransaction(int id)
     {
