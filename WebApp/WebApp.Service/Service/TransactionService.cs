@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.Globalization;
+using System.Net.Http.Json;
 using WebApp.DAL.Models;
 using WebApp.DAL.Models.WebApp.DAL.Models;
 using WebApp.DAL.RepositoryInterfaces;
@@ -11,6 +12,12 @@ namespace WebApp.Service
     public class TransactionService : ITransactionService
     {
         private readonly ITransactionRepository _transactionRepository;
+        private readonly HttpClient _httpClient;
+
+        public TransactionService(HttpClient httpClient)
+        {
+            this._httpClient = httpClient;
+        }
 
         public TransactionService(ITransactionRepository transactionRepository)
         {
@@ -33,7 +40,7 @@ namespace WebApp.Service
             {
                 Type = transactionDto.Type, 
                 Amount = transactionDto.Amount,
-                Date = DateTime.ParseExact(transactionDto.Date, "dd.MM.yy", CultureInfo.InvariantCulture),
+                Date = DateTime.ParseExact(transactionDto.Date, "dd.MM.yyyy", CultureInfo.InvariantCulture),
                 Description = transactionDto.Description
             };
 

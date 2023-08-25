@@ -19,6 +19,4 @@ namespace WebApp.DAL.Models
             public TransactionType TransactionType { get; set; }
         }
     }
-
-
 }

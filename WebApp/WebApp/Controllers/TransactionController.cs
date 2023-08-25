@@ -17,13 +17,13 @@ namespace WebApp.Controllers
             _transactionService = transactionService;
         }
 
-        [HttpGet]
+        [HttpGet("getAllTransactions")]
         public IActionResult GetTransactions()
         {
             return new OkObjectResult(_transactionService.GetTransactions());
         }
 
-        [HttpGet("{id}", Name = "Get")]
+        [HttpGet("getTransactionById/{id}", Name = "Get")]
         public IActionResult GetById(int id)
         {
             var transaction = _transactionService.GetTransactionById(id);
@@ -34,7 +34,7 @@ namespace WebApp.Controllers
             return new OkObjectResult(transaction);
         }
 
-        [HttpPost]
+        [HttpPost("addTransaction")]
         public IActionResult Post([FromBody] TransactionViewModel transactionDto)
         {
             if (!ModelState.IsValid)
@@ -44,10 +44,11 @@ namespace WebApp.Controllers
 
             _transactionService.InsertTransaction(transactionDto);
 
-            return CreatedAtAction(nameof(GetById), new { id = transactionDto.TransactionId }, transactionDto);
+            return CreatedAtAction(nameof(GetById), new { id = transactionDto.TransactionId, transactionType = 
+                transactionDto.TransactionType}, transactionDto);
         }
 
-        [HttpPut("{id}")]
+        [HttpPut("editTransaction/{id}")]
         public IActionResult Put(int id, [FromBody] TransactionViewModel transactionDto)
         {
             if (id != transactionDto.TransactionId)
@@ -60,8 +61,7 @@ namespace WebApp.Controllers
             return NoContent();
         }
 
-
-        [HttpDelete("{id}")]
+        [HttpDelete("deleteTransaction/{id}")]
         public IActionResult Delete(int id)
         {
             var transaction = _transactionService.GetTransactionById(id);

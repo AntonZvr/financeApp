@@ -1,0 +1,80 @@
+﻿@page "/transactions"
+@using WebApp.DAL.Models.WebApp.DAL.Models;
+@inject HttpClient Http
+
+<h3>Transactions</h3>
+
+@if (transactions == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <EditForm Model="newTransaction" OnValidSubmit="AddTransaction">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+    
+        <InputDate id="date" @bind-Value="newTransaction.Date" placeholder="Date" />
+        <InputNumber id="type" @bind-Value="newTransaction.Type" placeholder ="Type"></InputNumber>
+        <InputNumber id="amount" @bind-Value="newTransaction.Amount" placeholder="Amount"></InputNumber>
+        <InputText id="desc" @bind-Value="newTransaction.Description" placeholder="Description"></InputText>
+
+        <button type="submit">Add New Transaction</button>
+    </EditForm>
+
+    <table class='table'>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Amount</th>
+                <th>Date</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var transaction in transactions)
+            {
+                <tr>
+                    <td>@transaction.TransactionId</td>
+                    <td>@transaction.Amount</td>
+                    <td>@transaction.Date</td>
+                    <td>
+                        <button @onclick="() => EditTransaction(transaction.TransactionId)">Edit</button>
+                        <button @onclick="() => DeleteTransaction(transaction.TransactionId)">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private Transaction[] transactions;
+    private Transaction newTransaction = new Transaction();
+
+    protected override async Task OnInitializedAsync()
+    {
+        transactions = await Http.GetFromJsonAsync<Transaction[]>("https://localhost:7271/api/Transactions/getAllTransactions");
+    }
+
+    private async Task AddTransaction()
+    {
+        Console.WriteLine(newTransaction);
+        await Http.PostAsJsonAsync("https://localhost:7271/api/Transactions/addTransaction", newTransaction);
+        newTransaction = new Transaction(); // Reset the form
+        await OnInitializedAsync(); // Refresh the list
+    }
+
+    private async Task EditTransaction(int id)
+    {
+        var editedTransaction = transactions.First(t => t.TransactionId == id);
+        await Http.PutAsJsonAsync($"https://localhost:7271/api/Transactions/editTransaction/{id}", editedTransaction);
+        await OnInitializedAsync();
+    }
+
+    private async Task DeleteTransaction(int id)
+    {
+        await Http.DeleteAsync($"https://localhost:7271/api/Transactions/deleteTransaction/{id}");
+        await OnInitializedAsync();
+    }
+}
