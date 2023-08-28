@@ -38,7 +38,7 @@ namespace WebApp.Controllers
         }
 
         // PUT: api/TransactionType/5
-        [HttpPut("{id}")]
+        [HttpPut("editTransactionType/{id}")]
         public IActionResult PutTransactionType(int id, TransactionType transactionType)
         {
             if (id != transactionType.Id)

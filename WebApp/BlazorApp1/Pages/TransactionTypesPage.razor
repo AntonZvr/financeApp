@@ -14,14 +14,12 @@ else
 {
     @if (isEditing)
     {
-        <EditForm Model="editingTransactionViewModel" OnValidSubmit="@UpdateTransaction">
+        <EditForm Model="editingTransactionType" OnValidSubmit="@UpdateTransaction">
             <DataAnnotationsValidator />
             <ValidationSummary />
 
-            <InputText id="date" @bind-Value="editingTransactionViewModel.Date" placeholder="Date" />
-            <InputNumber id="type" @bind-Value="editingTransactionViewModel.Type" placeholder="Type"></InputNumber>
-            <InputNumber id="amount" @bind-Value="editingTransactionViewModel.Amount" placeholder="Amount"></InputNumber>
-            <InputText id="desc" @bind-Value="editingTransactionViewModel.Description" placeholder="Description"></InputText>
+            <InputText id="Name" @bind-Value="editingTransactionType.Name" placeholder="Name"></InputText>
+            <InputText id="Category" @bind-Value="editingTransactionType.Category" placeholder="Category"></InputText>
 
             <button type="submit">Save Changes</button>
             <button type="button" @onclick="@(() => isEditing = false)">Cancel</button>
@@ -48,15 +46,15 @@ else
             </tr>
         </thead>
         <tbody>
-            @foreach (var transaction in transactionTypes)
+            @foreach (var transactionType in transactionTypes)
             {
                 <tr>
-                    <td>@transaction.Id</td>
-                    <td>@transaction.Name</td>
-                    <td>@transaction.Category</td>
+                    <td>@transactionType.Id</td>
+                    <td>@transactionType.Name</td>
+                    <td>@transactionType.Category</td>
                     <td>
-                        @*<button @onclick="() => StartEditingTransaction(transaction.TransactionId)">Edit</button>*@ 
-                        <button @onclick="() => DeleteTransaction(transaction.Id)">Delete</button>
+                        <button @onclick="() => StartEditingTransaction(transactionType.Id)">edit</button>
+                        <button @onclick="() => DeleteTransaction(transactionType.Id)">Delete</button>
                     </td>
                 </tr>
             }
@@ -69,28 +67,24 @@ else
     private TransactionType newTransactionType = new TransactionType();
     TransactionType transactionType = new TransactionType();
     private bool isEditing = false;
-    private TransactionViewModel editingTransactionViewModel;
+    private TransactionType editingTransactionType;
 
     protected override async Task OnInitializedAsync()
     {
         transactionTypes = await Http.GetFromJsonAsync<TransactionType[]>("https://localhost:7271/api/TransactionType/getTransactionTypes");
     }
 
-    //private void StartEditingTransaction(int id)
-    //{
-    //    var transaction = transactionTypes.First(t => t.TransactionId == id);
-    //    editingTransactionViewModel = new TransactionViewModel
-    //        {
-    //            TransactionId = transaction.TransactionId,
-    //            Type = transaction.Type,
-    //            Amount = (float)transaction.Amount,
-    //            Date = transaction.Date.ToString(),
-    //            Description = transaction.Description,
-    //            TransactionType = transaction.TransactionType
-    //        };
-    //    isEditing = true;
-    //}
-
+    private void StartEditingTransaction(int id)
+    {
+        var transaction = transactionTypes.First(t => t.Id == id);
+        editingTransactionType = new TransactionType
+            {
+                Id = transaction.Id,
+                Name = transaction.Name,
+                Category = transaction.Category
+            };
+        isEditing = true;
+    }
 
     private async Task AddTransaction()
     {
@@ -112,7 +106,7 @@ else
     {
         try
         {
-            HttpResponseMessage response = await Http.PutAsJsonAsync($"https://localhost:7271/api/Transactions/editTransaction/{editingTransactionViewModel.TransactionId}", editingTransactionViewModel);
+            HttpResponseMessage response = await Http.PutAsJsonAsync($"https://localhost:7271/api/TransactionType/editTransactionType/{editingTransactionType.Id}", editingTransactionType);
             response.EnsureSuccessStatusCode();
 
             await OnInitializedAsync();
@@ -123,7 +117,6 @@ else
             Console.WriteLine($"Error updating transaction: {ex.Message}");
         }
     }
-
 
     private async Task DeleteTransaction(int id)
     {
