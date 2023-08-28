@@ -12,7 +12,12 @@ namespace WebApp.Service.Service
     public class TransactionTypeService : ITransactionTypeService
     {
         private readonly ITransactionTypeRepository _transactionTypeRepository;
+        private readonly HttpClient _httpClient;
 
+        public TransactionTypeService(HttpClient httpClient)
+        {
+            this._httpClient = httpClient;
+        }
         public TransactionTypeService(ITransactionTypeRepository transactionTypeRepository)
         {
             _transactionTypeRepository = transactionTypeRepository;

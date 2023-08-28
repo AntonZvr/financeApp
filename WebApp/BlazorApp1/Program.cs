@@ -1,6 +1,10 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using WebApp.Data.DAL.Repository;
+using WebApp.Data.DAL.RepositoryInterfaces;
 using WebApp.Service;
+using WebApp.Service.Service;
+using WebApp.Service.ServiceInterfaces;
 using WebApp.ServiceInterfaces;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,6 +17,7 @@ builder.Services.AddHttpClient("api", (serviceProvider, client) =>
     client.BaseAddress = new Uri("https://localhost:7271");
 });
 
+builder.Services.AddScoped<ITransactionTypeService, TransactionTypeService>();
 builder.Services.AddScoped<ITransactionService, TransactionService>();
 var app = builder.Build();
 
