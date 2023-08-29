@@ -25,14 +25,15 @@ else if (report == null)
 }
 else
 {
-    <h3>Report for Period: @startDate - @endDate</h3>
+    <h3>Report for Period: @startDate.ToString().Substring(0,10) - @endDate.ToString().Substring(0,10)</h3>
     <p>Total Income: @report.Income</p>
     <p>Total Expenses: @report.Expenses</p>
     <h3>Transactions:</h3>
     <ul>
         @foreach (var transaction in report.Transactions)
         {
-            <li>@transaction.Description: @transaction.Amount (Type: @transaction.TransactionType.Name)</li>
+            <li>@transaction.Description: @transaction.Amount (Name: @transaction.TransactionType.Name; 
+                Category: @transaction.TransactionType.Category)</li>
         }
     </ul>
 }
