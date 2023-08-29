@@ -29,11 +29,23 @@ namespace WebApp.Data.DAL.Repository
             _context.TransactionType1.Add(transactionType);
         }
 
-        public void DeleteTransactionType(int transactionTypeId)
-        {
+        public bool DeleteTransactionType(int transactionTypeId)
+        {  
+            bool existTransactionsWithThisType = _context.Transactions1.Any(t => t.Type == transactionTypeId);
+
+            if (existTransactionsWithThisType)
+            {
+                return false;  
+            }
+
             TransactionType transactionType = _context.TransactionType1.Find(transactionTypeId);
             _context.TransactionType1.Remove(transactionType);
+
+            _context.SaveChanges(); 
+
+            return true; 
         }
+
 
         public void UpdateTransactionType(TransactionType transactionType)
         {

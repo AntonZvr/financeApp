@@ -19,7 +19,10 @@ else
             <ValidationSummary />
 
             <InputText id="Name" @bind-Value="editingTransactionType.Name" placeholder="Name"></InputText>
-            <InputText id="Category" @bind-Value="editingTransactionType.Category" placeholder="Category"></InputText>
+            <select id="category" @bind="editingTransactionType.Category">
+                <option value="Income">Income</option>
+                <option value="Expense">Expense</option>
+            </select>
 
             <button type="submit">Save Changes</button>
             <button type="button" @onclick="@(() => isEditing = false)">Cancel</button>
@@ -31,7 +34,10 @@ else
         <ValidationSummary />
 
         <InputText id="name" @bind-Value="newTransactionType.Name" placeholder="Name"></InputText>
-        <InputText id="category" @bind-Value="newTransactionType.Category" placeholder="Category"></InputText>
+        <select id="category" @bind="newTransactionType.Category">
+            <option value="Income">Income</option>
+            <option value="Expense">Expense</option>
+        </select>
 
         <button type="submit">Add New Transaction Type</button>
     </EditForm>
@@ -39,7 +45,6 @@ else
     <table class='table'>
         <thead>
             <tr>
-                <th>ID</th>
                 <th>Name</th>
                 <th>Category</th>
                 <th>Actions</th>
@@ -49,12 +54,15 @@ else
             @foreach (var transactionType in transactionTypes)
             {
                 <tr>
-                    <td>@transactionType.Id</td>
                     <td>@transactionType.Name</td>
                     <td>@transactionType.Category</td>
                     <td>
                         <button @onclick="() => StartEditingTransaction(transactionType.Id)">Edit</button>
                         <button @onclick="() => DeleteTransaction(transactionType.Id)">Delete</button>
+                        @if (!string.IsNullOrEmpty(deleteErrorMessage))
+                        {
+                            <p>Error: @deleteErrorMessage</p>
+                        }
                     </td>
                 </tr>
             }
@@ -68,6 +76,7 @@ else
     TransactionType transactionType = new TransactionType();
     private bool isEditing = false;
     private TransactionType editingTransactionType;
+    private string deleteErrorMessage;
 
     protected override async Task OnInitializedAsync()
     {
@@ -120,7 +129,15 @@ else
 
     private async Task DeleteTransaction(int id)
     {
-        await Http.DeleteAsync($"https://localhost:7271/api/TransactionType/deleteType/{id}");
-        await OnInitializedAsync();
+        try
+        {
+            await Http.DeleteAsync($"https://localhost:7271/api/TransactionType/deleteType/{id}");
+            await OnInitializedAsync();
+        }
+        catch (Exception ex)
+        {
+            deleteErrorMessage = $"Error deleting transaction type: {ex.Message}";
+            Console.WriteLine(deleteErrorMessage);
+        }
     }
 }
