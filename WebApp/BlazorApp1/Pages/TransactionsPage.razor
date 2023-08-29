@@ -1,4 +1,5 @@
 ﻿@page "/transactions"
+@using System.ComponentModel.DataAnnotations;
 @using WebApp.DAL.Models.WebApp.DAL.Models;
 @using WebApp.Data.DAL.Models;
 @using WebApp.Data.DAL.ViewModels;
@@ -19,8 +20,15 @@ else
             <ValidationSummary />
 
             <InputText id="date" @bind-Value="editingTransactionViewModel.Date" placeholder="Date" />
-            <InputNumber id="type" @bind-Value="editingTransactionViewModel.Type" placeholder="Type"></InputNumber>
+            <ValidationMessage For="() => editingTransactionViewModel.Date" />
+            <InputSelect id="type" @bind-Value="editingTransactionViewModel.Type">
+                @foreach (var type in transactionTypes)
+                {
+                    <option value="@type.Id">@type.Name - @type.Category</option>
+                }
+            </InputSelect>
             <InputNumber id="amount" @bind-Value="editingTransactionViewModel.Amount" placeholder="Amount"></InputNumber>
+            <ValidationMessage For="() => editingTransactionViewModel.Amount" />
             <InputText id="desc" @bind-Value="editingTransactionViewModel.Description" placeholder="Description"></InputText>
 
             <button type="submit">Save Changes</button>
@@ -33,19 +41,35 @@ else
         <ValidationSummary />
 
         <InputText id="date" @bind-Value="newTransactionViewModel.Date" placeholder="Date" />
-        <InputNumber id="type" @bind-Value="newTransactionViewModel.Type" placeholder="Type"></InputNumber>
+        <ValidationMessage For="() => newTransactionViewModel.Date" />
+        <InputSelect id="type" @bind-Value="newTransactionViewModel.Type">
+            @foreach (var type in transactionTypes)
+            {
+                <option value="@type.Id">@type.Name - @type.Category</option>
+            }
+        </InputSelect>
         <InputNumber id="amount" @bind-Value="newTransactionViewModel.Amount" placeholder="Amount"></InputNumber>
+        <ValidationMessage For="() => newTransactionViewModel.Amount" />
         <InputText id="desc" @bind-Value="newTransactionViewModel.Description" placeholder="Description"></InputText>
 
         <button type="submit">Add New Transaction</button>
     </EditForm>
+ 
+    <p>
+        @foreach (var error in validationMessages)
+        {
+            <p>@error</p>    
+        }
+    </p>
 
     <table class='table'>
         <thead>
             <tr>
-                <th>ID</th>
+                <th>Category</th>
+                <th>Name</th>
                 <th>Amount</th>
                 <th>Date</th>
+                <th>Description</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -53,9 +77,11 @@ else
             @foreach (var transaction in transactions)
             {
                 <tr>
-                    <td>@transaction.TransactionId</td>
+                    <td>@transaction.TransactionType.Category</td>
+                    <td>@transaction.TransactionType.Name</td>
                     <td>@transaction.Amount</td>
-                    <td>@transaction.Date</td>
+                    <td>@transaction.Date.ToString("dd-MM-yyyy").Substring(0, 10)</td>
+                    <td>@transaction.Description</td>
                     <td>
                         <button @onclick="() => StartEditingTransaction(transaction.TransactionId)">Edit</button> 
                         <button @onclick="() => DeleteTransaction(transaction.TransactionId)">Delete</button>
@@ -68,15 +94,18 @@ else
 
 @code {
     private Transaction[] transactions;
+    private List<TransactionType> transactionTypes;
     private TransactionViewModel newTransactionViewModel = new TransactionViewModel();
     private Transaction newTransaction = new Transaction();
     TransactionType transactionType = new TransactionType();
     private bool isEditing = false;
     private TransactionViewModel editingTransactionViewModel;
+    private List<ValidationResult> validationMessages = new List<ValidationResult>();
 
     protected override async Task OnInitializedAsync()
     {
         transactions = await Http.GetFromJsonAsync<Transaction[]>("https://localhost:7271/api/Transactions/getAllTransactions");
+        transactionTypes = await Http.GetFromJsonAsync<List<TransactionType>>("https://localhost:7271/api/TransactionType/getTransactionTypes");
     }
 
     private void StartEditingTransaction(int id)
@@ -87,7 +116,7 @@ else
                 TransactionId = transaction.TransactionId,
                 Type = transaction.Type,
                 Amount = (float)transaction.Amount,
-                Date = transaction.Date.ToString(),
+                Date = transaction.Date.ToString().Substring(0, 10),
                 Description = transaction.Description,
                 TransactionType = transaction.TransactionType
             };
@@ -98,30 +127,55 @@ else
     {
         try
         {
-            transactionType.Name = "";
-            transactionType.Category = "";
-            transactionType.Id = 0;
-            newTransactionViewModel.TransactionType = transactionType;
-            HttpResponseMessage response = await Http.PostAsJsonAsync("https://localhost:7271/api/Transactions/addTransaction", newTransactionViewModel);
-            response.EnsureSuccessStatusCode(); 
+            validationMessages.Clear();
+            if (!DateTime.TryParse(newTransactionViewModel.Date, out _))
+            {
+                validationMessages.Add(new ValidationResult("Date is in the wrong format.", new[] { nameof(newTransactionViewModel.Date) }));
+            }
+            if (newTransactionViewModel.Amount < 0)
+            {
+                validationMessages.Add(new ValidationResult("Amount should be >= 0", new[] { nameof(newTransactionViewModel.Amount) }));
+            }
+            else
+            {
+                transactionType.Name = "";
+                transactionType.Category = "";
+                transactionType.Id = 0;
+                newTransactionViewModel.TransactionType = transactionType;
+                HttpResponseMessage response = await Http.PostAsJsonAsync("https://localhost:7271/api/Transactions/addTransaction", newTransactionViewModel);
+                response.EnsureSuccessStatusCode();
 
-            await OnInitializedAsync(); 
+                await OnInitializedAsync();
+                newTransactionViewModel = new TransactionViewModel();
+            }
         }
         catch (Exception ex)
-        {
+        {            
             Console.WriteLine($"Error adding transaction: {ex.Message}");
         }
     }
 
     private async Task UpdateTransaction()
     {
+        validationMessages.Clear();
+        if (!DateTime.TryParse(editingTransactionViewModel.Date, out _))
+        {
+            validationMessages.Add(new ValidationResult("Date is in the wrong format.", new[] { nameof(editingTransactionViewModel.Date) }));
+        }
+        if (editingTransactionViewModel.Amount < 0)
+        {
+            validationMessages.Add(new ValidationResult("Amount should be >= 0", new[] { nameof(editingTransactionViewModel.Amount) }));
+        }
         try
         {
             HttpResponseMessage response = await Http.PutAsJsonAsync($"https://localhost:7271/api/Transactions/editTransaction/{editingTransactionViewModel.TransactionId}", editingTransactionViewModel);
             response.EnsureSuccessStatusCode();
 
             await OnInitializedAsync();
-            isEditing = false; // Hide the Edit Form
+            if (validationMessages.Count == 0)
+            {
+                isEditing = false; // Hide the Edit Form
+            }
         }
         catch (Exception ex)
         {
