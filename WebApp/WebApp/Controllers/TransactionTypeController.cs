@@ -17,7 +17,7 @@ namespace WebApp.Controllers
         }
 
         // GET: api/TransactionType
-        [HttpGet]
+        [HttpGet("getTransactionTypes")]
         public IEnumerable<TransactionType> GetTransactionTypes()
         {
             return _transactionTypeService.GetTransactionTypes();
@@ -38,7 +38,7 @@ namespace WebApp.Controllers
         }
 
         // PUT: api/TransactionType/5
-        [HttpPut("{id}")]
+        [HttpPut("editTransactionType/{id}")]
         public IActionResult PutTransactionType(int id, TransactionType transactionType)
         {
             if (id != transactionType.Id)
@@ -52,7 +52,7 @@ namespace WebApp.Controllers
         }
 
         // POST: api/TransactionType
-        [HttpPost]
+        [HttpPost("addTransactionType")]
         public ActionResult<TransactionType> PostTransactionType(TransactionType transactionType)
         {
             _transactionTypeService.InsertTransactionType(transactionType);
@@ -61,7 +61,7 @@ namespace WebApp.Controllers
         }
 
         // DELETE: api/TransactionType/5
-        [HttpDelete("{id}")]
+        [HttpDelete("deleteType/{id}")]
         public ActionResult<TransactionType> DeleteTransactionType(int id)
         {
             var transactionType = _transactionTypeService.GetTransactionTypeById(id);

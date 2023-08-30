@@ -1,0 +1,62 @@
+﻿@page "/periodreport"
+@using System.Net;
+@using WebApp.Data.DAL.ViewModels
+@inject HttpClient Http
+
+<h3>Period Report</h3>
+
+<EditForm Model="this">
+    <p>Select start date:</p>
+    <InputDate @bind-Value="startDate" />
+
+    <p>Select end date:</p>
+    <InputDate @bind-Value="endDate" />
+</EditForm>
+
+<button @onclick="GetReport">Get Period Report</button>
+
+@if (noTransactionsFound)
+{
+    <p>No transactions found for the selected period.</p>
+}
+else if (report == null)
+{
+    <p><em>Choose a start and end date to get the report...</em></p>
+}
+else
+{
+    <h3>Report for Period: @startDate.ToString().Substring(0,10) - @endDate.ToString().Substring(0,10)</h3>
+    <p>Total Income: @report.Income</p>
+    <p>Total Expenses: @report.Expenses</p>
+    <h3>Transactions:</h3>
+    <ul>
+        @foreach (var transaction in report.Transactions)
+        {
+            <li>@transaction.Description: @transaction.Amount (Name: @transaction.TransactionType.Name; 
+                Category: @transaction.TransactionType.Category)</li>
+        }
+    </ul>
+}
+
+@code {
+    private DateTime startDate = DateTime.Today;
+    private DateTime endDate = DateTime.Today;
+    private FinanceReportViewModel report;
+    private bool noTransactionsFound = false;
+
+    private async Task GetReport()
+    {
+        var result = await Http.GetAsync($"https://localhost:7271/api/Transactions/PeriodReport/{startDate:s}/{endDate:s}");
+
+        if (result.IsSuccessStatusCode)
+        {
+            report = await result.Content.ReadFromJsonAsync<FinanceReportViewModel>();
+            noTransactionsFound = false; // added this line to reset the flag
+        }
+        else if (result.StatusCode == HttpStatusCode.NotFound)
+        {
+            report = null;
+            noTransactionsFound = true;
+        }
+    }
+}

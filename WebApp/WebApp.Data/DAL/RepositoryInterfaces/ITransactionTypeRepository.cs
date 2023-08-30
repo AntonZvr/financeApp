@@ -13,7 +13,7 @@ namespace WebApp.Data.DAL.RepositoryInterfaces
         IEnumerable<TransactionType> GetTransactionTypes();
         TransactionType GetTransactionTypeById(int id);
         void InsertTransactionType(TransactionType transactionType);
-        void DeleteTransactionType(int transactionTypeId);
+        bool DeleteTransactionType(int transactionTypeId);
         void UpdateTransactionType(TransactionType transactionType);
         void Save();
         bool TransactionTypeExists(int id);

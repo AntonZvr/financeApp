@@ -1,0 +1,143 @@
+﻿@page "/transactionTypes"
+@using WebApp.DAL.Models.WebApp.DAL.Models;
+@using WebApp.Data.DAL.Models;
+@using WebApp.Data.DAL.ViewModels;
+@inject HttpClient Http
+
+<h3>Transaction Types</h3>
+
+@if (transactionTypes == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    @if (isEditing)
+    {
+        <EditForm Model="editingTransactionType" OnValidSubmit="@UpdateTransaction">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <InputText id="Name" @bind-Value="editingTransactionType.Name" placeholder="Name"></InputText>
+            <select id="category" @bind="editingTransactionType.Category">
+                <option value="Income">Income</option>
+                <option value="Expense">Expense</option>
+            </select>
+
+            <button type="submit">Save Changes</button>
+            <button type="button" @onclick="@(() => isEditing = false)">Cancel</button>
+        </EditForm>
+    }
+
+    <EditForm Model="newTransactionType" OnValidSubmit="@AddTransaction">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <InputText id="name" @bind-Value="newTransactionType.Name" placeholder="Name"></InputText>
+        <select id="category" @bind="newTransactionType.Category">
+            <option value="Income">Income</option>
+            <option value="Expense">Expense</option>
+        </select>
+
+        <button type="submit">Add New Transaction Type</button>
+    </EditForm>
+
+    <table class='table'>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var transactionType in transactionTypes)
+            {
+                <tr>
+                    <td>@transactionType.Name</td>
+                    <td>@transactionType.Category</td>
+                    <td>
+                        <button @onclick="() => StartEditingTransaction(transactionType.Id)">Edit</button>
+                        <button @onclick="() => DeleteTransaction(transactionType.Id)">Delete</button>
+                        @if (!string.IsNullOrEmpty(deleteErrorMessage))
+                        {
+                            <p>Error: @deleteErrorMessage</p>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private TransactionType[] transactionTypes;
+    private TransactionType newTransactionType = new TransactionType();
+    TransactionType transactionType = new TransactionType();
+    private bool isEditing = false;
+    private TransactionType editingTransactionType;
+    private string deleteErrorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        transactionTypes = await Http.GetFromJsonAsync<TransactionType[]>("https://localhost:7271/api/TransactionType/getTransactionTypes");
+    }
+
+    private void StartEditingTransaction(int id)
+    {
+        var transaction = transactionTypes.First(t => t.Id == id);
+        editingTransactionType = new TransactionType
+            {
+                Id = transaction.Id,
+                Name = transaction.Name,
+                Category = transaction.Category
+            };
+        isEditing = true;
+    }
+
+    private async Task AddTransaction()
+    {
+        try
+        {
+            Console.WriteLine(newTransactionType.Name, newTransactionType.Category);
+            HttpResponseMessage response = await Http.PostAsJsonAsync("https://localhost:7271/api/TransactionType/addTransactionType", newTransactionType);
+            response.EnsureSuccessStatusCode(); 
+
+            await OnInitializedAsync(); 
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error adding transaction type: {ex.Message}");
+        }
+    }
+
+    private async Task UpdateTransaction()
+    {
+        try
+        {
+            HttpResponseMessage response = await Http.PutAsJsonAsync($"https://localhost:7271/api/TransactionType/editTransactionType/{editingTransactionType.Id}", editingTransactionType);
+            response.EnsureSuccessStatusCode();
+
+            await OnInitializedAsync();
+            isEditing = false; // Hide the Edit Form
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error updating transaction: {ex.Message}");
+        }
+    }
+
+    private async Task DeleteTransaction(int id)
+    {
+        try
+        {
+            await Http.DeleteAsync($"https://localhost:7271/api/TransactionType/deleteType/{id}");
+            await OnInitializedAsync();
+        }
+        catch (Exception ex)
+        {
+            deleteErrorMessage = $"Error deleting transaction type: {ex.Message}";
+            Console.WriteLine(deleteErrorMessage);
+        }
+    }
+}

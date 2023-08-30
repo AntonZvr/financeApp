@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.Globalization;
+using System.Net.Http.Json;
 using WebApp.DAL.Models;
 using WebApp.DAL.Models.WebApp.DAL.Models;
 using WebApp.DAL.RepositoryInterfaces;
@@ -11,6 +12,12 @@ namespace WebApp.Service
     public class TransactionService : ITransactionService
     {
         private readonly ITransactionRepository _transactionRepository;
+        private readonly HttpClient _httpClient;
+
+        public TransactionService(HttpClient httpClient)
+        {
+            this._httpClient = httpClient;
+        }
 
         public TransactionService(ITransactionRepository transactionRepository)
         {
@@ -29,29 +36,53 @@ namespace WebApp.Service
 
         public void InsertTransaction(TransactionViewModel transactionDto)
         {
-            var transaction = new Transaction
+            try
             {
-                Type = transactionDto.Type, 
-                Amount = transactionDto.Amount,
-                Date = DateTime.ParseExact(transactionDto.Date, "dd.MM.yy", CultureInfo.InvariantCulture),
-                Description = transactionDto.Description
-            };
+                var transaction = new Transaction
+                {
+                    Type = transactionDto.Type,
+                    Amount = transactionDto.Amount,
+                    Date = DateTime.ParseExact(transactionDto.Date, "dd.MM.yyyy", CultureInfo.InvariantCulture),
+                    Description = transactionDto.Description
+                };
 
-            _transactionRepository.InsertTransaction(transaction);
-            _transactionRepository.Save();
+                _transactionRepository.InsertTransaction(transaction);
+                _transactionRepository.Save();
+            }
+            catch (FormatException ex)
+            {
+                Console.WriteLine("Invalid date format. Please enter the date in the format dd.MM.yyyy.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("An error occurred while inserting the transaction: " + ex.Message);
+            }
         }
+
 
         public void UpdateTransaction(int id, TransactionViewModel transactionDto)
         {
-            var transaction = _transactionRepository.GetTransactionById(id);
-            transaction.Type = transactionDto.Type; 
-            transaction.Amount = transactionDto.Amount;
-            transaction.Date = DateTime.ParseExact(transactionDto.Date, "dd.MM.yy", CultureInfo.InvariantCulture);
-            transaction.Description = transactionDto.Description;
+            try
+            {
+                var transaction = _transactionRepository.GetTransactionById(id);
+                transaction.Type = transactionDto.Type;
+                transaction.Amount = transactionDto.Amount;
+                transaction.Date = DateTime.ParseExact(transactionDto.Date, "dd.MM.yyyy", CultureInfo.InvariantCulture);
+                transaction.Description = transactionDto.Description;
 
-            _transactionRepository.UpdateTransaction(transaction);
-            _transactionRepository.Save();
+                _transactionRepository.UpdateTransaction(transaction);
+                _transactionRepository.Save();
+            }
+            catch (FormatException ex)
+            {              
+                Console.WriteLine("Invalid date format. Please enter the date in the format dd.MM.yyyy.");
+            }
+            catch (Exception ex)
+            {          
+                Console.WriteLine("An error occurred while updating the transaction: " + ex.Message);
+            }
         }
+
 
         public void DeleteTransaction(int id)
         {
