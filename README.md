@@ -1,4 +1,4 @@
-# financeWebApi
+# financeWebApi + blazor
 
 
 
